@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Match YNAB Transaction{% endblock %}
+{% block content %}
+<h1>Match: {{ receipt.merchant or 'Receipt' }}</h1>
+<p>Total: <strong>${{ "%.2f"|format(receipt.total_dollars) }}</strong> | Date: {{ receipt.purchase_datetime.strftime('%Y-%m-%d') if receipt.purchase_datetime else 'unknown' }}</p>
+
+{% if candidates %}
+<form method="post">
+  <h3>Top Matches</h3>
+  <table class="table table-hover">
+    <thead><tr><th>Select</th><th>Date</th><th>Payee</th><th>Amount</th><th>Score</th><th>Why</th></tr></thead>
+    <tbody>
+      {% for c in candidates %}
+      {% set txn = c.transaction %}
+      <tr>
+        <td>
+          <input type="radio" name="ynab_transaction_id" value="{{ txn.id }}"
+                 id="txn_{{ loop.index }}"
+                 {% if loop.first %}checked{% endif %}>
+          <input type="hidden" name="matched_amount_cents" value="{{ (txn.amount|abs) // 10 }}">
+          <input type="hidden" name="matched_date" value="{{ txn.date }}">
+          <input type="hidden" name="match_confidence" value="{{ c.score / 100 }}">
+        </td>
+        <td>{{ txn.date }}</td>
+        <td>{{ txn.payee_name or '—' }}</td>
+        <td>${{ "%.2f"|format((txn.amount|abs) / 1000) }}</td>
+        <td><span class="badge bg-primary">{{ c.score }}</span></td>
+        <td><small class="text-muted">{{ c.explanation }}</small></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button type="submit" class="btn btn-success">Use Selected Match</button>
+  <button type="submit" name="ynab_transaction_id" value="no_match" class="btn btn-outline-secondary ms-2">No Match</button>
+</form>
+{% else %}
+<div class="alert alert-warning">
+  No YNAB candidates found. Check your Settings (YNAB token + budget/account).
+  Ensure the receipt has a total amount set.
+</div>
+<form method="post">
+  <button type="submit" name="ynab_transaction_id" value="no_match" class="btn btn-outline-secondary">Mark as No Match</button>
+</form>
+{% endif %}
+
+<a href="{{ url_for('receipts.receipt_detail', receipt_id=receipt.id) }}" class="btn btn-outline-secondary mt-3">Back</a>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Receipts{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Receipts</h1>
+  <a href="{{ url_for('receipts.import_receipts') }}" class="btn btn-primary">Import More</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-3">
+    <select name="status" class="form-select">
+      <option value="">All Statuses</option>
+      {% for s in ['imported', 'needs_review', 'matched', 'applied'] %}
+      <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s.replace('_', ' ').title() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <input type="text" name="merchant" class="form-control" placeholder="Merchant filter"
+           value="{{ merchant_filter or '' }}">
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-outline-secondary w-100">Filter</button>
+  </div>
+</form>
+
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>Merchant</th>
+      <th>Date</th>
+      <th>Total</th>
+      <th>Items</th>
+      <th>Status</th>
+      <th>Confidence</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in receipts %}
+    <tr>
+      <td>{{ r.merchant or '—' }}</td>
+      <td>{{ r.purchase_datetime.strftime('%Y-%m-%d') if r.purchase_datetime else '—' }}</td>
+      <td>${{ "%.2f"|format(r.total_dollars) }}</td>
+      <td>{{ r.items|length }}</td>
+      <td><span class="badge bg-{{ {'imported':'primary','needs_review':'warning','matched':'info','applied':'success'}[r.status.value] }}">{{ r.status.value.replace('_',' ') }}</span></td>
+      <td>{{ "%.0f"|format(r.parse_confidence * 100) }}%</td>
+      <td>
+        <a href="{{ url_for('receipts.receipt_detail', receipt_id=r.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted">No receipts found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

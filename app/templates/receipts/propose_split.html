@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Propose Split{% endblock %}
+{% block content %}
+<h1>Propose Split: {{ receipt.merchant }}</h1>
+<p>YNAB Transaction: <code>{{ link.ynab_transaction_id }}</code> | Total: <strong>${{ "%.2f"|format(receipt.total_dollars) }}</strong></p>
+
+<form method="post" id="split-form">
+  <table class="table" id="splits-table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Amount ($)</th>
+        <th>YNAB Category ID (optional)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for split in splits %}
+      <tr>
+        <td><input type="text" class="form-control" name="category[]" value="{{ split.category }}"></td>
+        <td><input type="number" step="0.01" class="form-control amount-field" name="amount_dollars[]" value="{{ "%.2f"|format(split.amount_cents / 100) }}"></td>
+        <td><input type="text" class="form-control" name="ynab_category_id[]" value="{{ split.ynab_category_id or '' }}"></td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✕</button></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <button type="button" class="btn btn-outline-secondary btn-sm" id="add-row">+ Add Row</button>
+    <span>Total: <strong id="split-total">$0.00</strong> / <strong>${{ "%.2f"|format(receipt.total_dollars) }}</strong></span>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Review &amp; Confirm</button>
+  <a href="{{ url_for('receipts.receipt_detail', receipt_id=receipt.id) }}" class="btn btn-outline-secondary ms-2">Back</a>
+</form>
+
+<script>
+function updateTotal() {
+  let total = 0;
+  document.querySelectorAll('.amount-field').forEach(f => total += parseFloat(f.value || 0));
+  document.getElementById('split-total').textContent = '$' + total.toFixed(2);
+}
+document.addEventListener('input', updateTotal);
+document.getElementById('add-row').addEventListener('click', function() {
+  const tbody = document.querySelector('#splits-table tbody');
+  const row = document.createElement('tr');
+  row.innerHTML = `<td><input type="text" class="form-control" name="category[]"></td>
+    <td><input type="number" step="0.01" class="form-control amount-field" name="amount_dollars[]" value="0.00"></td>
+    <td><input type="text" class="form-control" name="ynab_category_id[]"></td>
+    <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✕</button></td>`;
+  tbody.appendChild(row);
+});
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('remove-row')) {
+    e.target.closest('tr').remove();
+    updateTotal();
+  }
+});
+updateTotal();
+</script>
+{% endblock %}

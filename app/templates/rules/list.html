@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Rules{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h1>Categorization Rules</h1>
+  <a href="{{ url_for('rules.new_rule') }}" class="btn btn-primary">+ New Rule</a>
+</div>
+
+<table class="table table-hover">
+  <thead><tr><th>Priority</th><th>Merchant</th><th>Pattern</th><th>Category</th><th>Enabled</th><th></th></tr></thead>
+  <tbody>
+    {% for rule in rules %}
+    <tr>
+      <td>{{ rule.priority }}</td>
+      <td>{{ rule.merchant or 'Any' }}</td>
+      <td><code>{{ rule.pattern_type.value }}:</code> {{ rule.pattern_value }}</td>
+      <td>{{ rule.suggested_subcategory }}</td>
+      <td>{% if rule.enabled %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+      <td>
+        <a href="{{ url_for('rules.edit_rule', rule_id=rule.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+        <form method="post" action="{{ url_for('rules.delete_rule', rule_id=rule.id) }}" class="d-inline"
+              onsubmit="return confirm('Delete this rule?')">
+          <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-center text-muted">No rules yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="card mt-4">
+  <div class="card-header">Test a Rule</div>
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col-md-2">
+        <select id="test-pattern-type" class="form-select">
+          <option value="contains">contains</option>
+          <option value="regex">regex</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <input type="text" id="test-pattern" class="form-control" placeholder="Pattern">
+      </div>
+      <div class="col-md-4">
+        <input type="text" id="test-text" class="form-control" placeholder="Test text">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-primary w-100" onclick="testRule()">Test</button>
+      </div>
+    </div>
+    <div id="test-result" class="mt-2"></div>
+  </div>
+</div>
+
+<script>
+function testRule() {
+  const data = new FormData();
+  data.append('pattern_type', document.getElementById('test-pattern-type').value);
+  data.append('pattern_value', document.getElementById('test-pattern').value);
+  data.append('test_text', document.getElementById('test-text').value);
+  fetch('{{ url_for("rules.test_rule_endpoint") }}', {method: 'POST', body: data})
+    .then(r => r.json())
+    .then(d => {
+      const el = document.getElementById('test-result');
+      el.innerHTML = d.matched
+        ? '<span class="badge bg-success">✓ Matched</span>'
+        : '<span class="badge bg-danger">✗ No match</span>';
+    });
+}
+</script>
+{% endblock %}

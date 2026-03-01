@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Rule{% endblock %}
+{% block content %}
+<h1>{{ action }} Rule</h1>
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">Merchant (optional, leave blank for any)</label>
+    <input type="text" name="merchant" class="form-control" value="{{ rule.merchant or '' if rule else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Pattern Type</label>
+    <select name="pattern_type" class="form-select">
+      <option value="contains" {% if rule and rule.pattern_type.value == 'contains' %}selected{% endif %}>contains</option>
+      <option value="regex" {% if rule and rule.pattern_type.value == 'regex' %}selected{% endif %}>regex</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Pattern Value</label>
+    <input type="text" name="pattern_value" class="form-control" required value="{{ rule.pattern_value if rule else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Suggested Subcategory</label>
+    <input type="text" name="suggested_subcategory" class="form-control" required value="{{ rule.suggested_subcategory if rule else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">YNAB Category ID (optional)</label>
+    <input type="text" name="ynab_category_id" class="form-control" value="{{ rule.ynab_category_id or '' if rule else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Priority (lower = higher priority)</label>
+    <input type="number" name="priority" class="form-control" value="{{ rule.priority if rule else 100 }}">
+  </div>
+  <div class="mb-3 form-check">
+    <input type="checkbox" name="enabled" class="form-check-input" id="enabled"
+           {% if not rule or rule.enabled %}checked{% endif %}>
+    <label class="form-check-label" for="enabled">Enabled</label>
+  </div>
+  <button type="submit" class="btn btn-primary">Save</button>
+  <a href="{{ url_for('rules.list_rules') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+</form>
+{% endblock %}

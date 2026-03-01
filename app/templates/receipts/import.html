@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Import Receipts{% endblock %}
+{% block content %}
+<h1>Import Receipts</h1>
+<p class="text-muted">Upload PDF, HTML, or TXT receipt files. Multiple files can be selected at once.</p>
+<form method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="files" class="form-label">Select receipt files</label>
+    <input type="file" class="form-control" id="files" name="files" multiple
+           accept=".pdf,.html,.htm,.txt">
+  </div>
+  <button type="submit" class="btn btn-primary">Import</button>
+  <a href="{{ url_for('receipts.list_receipts') }}" class="btn btn-secondary ms-2">Cancel</a>
+</form>
+{% endblock %}

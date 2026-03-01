@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="row g-3 mt-2">
+  <div class="col-md-3">
+    <div class="card text-bg-primary">
+      <div class="card-body">
+        <h5 class="card-title">Imported</h5>
+        <p class="card-text fs-1">{{ counts.imported }}</p>
+        <a href="{{ url_for('receipts.list_receipts', status='imported') }}" class="btn btn-light btn-sm">View</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-warning">
+      <div class="card-body">
+        <h5 class="card-title">Needs Review</h5>
+        <p class="card-text fs-1">{{ counts.needs_review }}</p>
+        <a href="{{ url_for('receipts.list_receipts', status='needs_review') }}" class="btn btn-light btn-sm">View</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-info">
+      <div class="card-body">
+        <h5 class="card-title">Matched</h5>
+        <p class="card-text fs-1">{{ counts.matched }}</p>
+        <a href="{{ url_for('receipts.list_receipts', status='matched') }}" class="btn btn-light btn-sm">View</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-success">
+      <div class="card-body">
+        <h5 class="card-title">Applied</h5>
+        <p class="card-text fs-1">{{ counts.applied }}</p>
+        <a href="{{ url_for('receipts.list_receipts', status='applied') }}" class="btn btn-light btn-sm">View</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mt-4">
+  <a href="{{ url_for('receipts.import_receipts') }}" class="btn btn-primary">Import Receipts</a>
+</div>
+{% endblock %}
