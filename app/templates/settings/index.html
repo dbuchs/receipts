@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+<form method="post">
+  <div class="card mb-4">
+    <div class="card-header">YNAB Integration</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">YNAB Personal Access Token</label>
+        {% if token_set %}
+          <input type="password" name="ynab_access_token" class="form-control" placeholder="(token saved — enter new value to update)">
+          <div class="form-text text-success">✓ Token is set.</div>
+        {% else %}
+          <input type="password" name="ynab_access_token" class="form-control" placeholder="Paste your YNAB token here">
+          <div class="form-text">Get a token at <a href="https://app.ynab.com/settings/developer" target="_blank">YNAB Developer Settings</a>.</div>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Budget ID</label>
+        <input type="text" name="ynab_budget_id" class="form-control" value="{{ settings.ynab_budget_id or '' }}">
+        <div class="form-text">Found in your YNAB URL: app.ynab.com/budgets/<strong>BUDGET_ID</strong>/...</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Account ID (optional, leave blank to search all accounts)</label>
+        <input type="text" name="ynab_account_id" class="form-control" value="{{ settings.ynab_account_id or '' }}">
+      </div>
+    </div>
+  </div>
+  <div class="card mb-4">
+    <div class="card-header">General</div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Default Currency</label>
+        <input type="text" name="default_currency" class="form-control" maxlength="3" value="{{ settings.default_currency or 'USD' }}">
+      </div>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">Save Settings</button>
+</form>
+{% endblock %}

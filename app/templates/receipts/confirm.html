@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Split{% endblock %}
+{% block content %}
+<div class="alert alert-warning">
+  <strong>⚠ Warning:</strong> Clicking <em>Confirm Apply</em> will write this split to YNAB. This cannot be undone automatically.
+</div>
+
+<h1>Confirm Split: {{ receipt.merchant }}</h1>
+<p>YNAB Transaction: <code>{{ proposal.ynab_transaction_id }}</code></p>
+
+<table class="table">
+  <thead><tr><th>Category</th><th>Amount</th></tr></thead>
+  <tbody>
+    {% for s in splits %}
+    <tr>
+      <td>{{ s.category }}</td>
+      <td>${{ "%.2f"|format(s.amount_cents / 100) }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="table-dark fw-bold">
+      <td>Total</td>
+      <td>${{ "%.2f"|format(splits|sum(attribute='amount_cents') / 100) }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<form method="post">
+  <button type="submit" class="btn btn-danger btn-lg">✓ Confirm Apply to YNAB</button>
+  <a href="{{ url_for('receipts.propose_split', receipt_id=receipt.id) }}" class="btn btn-outline-secondary ms-2">Edit Split</a>
+  <a href="{{ url_for('receipts.receipt_detail', receipt_id=receipt.id) }}" class="btn btn-outline-secondary ms-2">Back to Receipt</a>
+</form>
+{% endblock %}
