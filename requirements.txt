@@ -5,7 +5,7 @@ Flask-WTF==1.2.1
 WTForms==3.1.2
 pdfplumber==0.11.4
 beautifulsoup4==4.12.3
-cryptography==42.0.8
+cryptography==46.0.5
 rapidfuzz==3.9.7
 requests==2.32.3
 python-dotenv==1.0.1
