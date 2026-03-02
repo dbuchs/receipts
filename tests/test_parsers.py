@@ -54,3 +54,92 @@ def test_detect_parser_fallback():
     text = "Some random text with no merchant info"
     parser, score = detect_parser(text, 'unknown.txt')
     assert parser is not None  # fallback to generic
+
+
+def test_costco_parser_single_line_items():
+    parser = CostcoParser()
+    text = (
+        "COSTCO WHOLESALE\n"
+        "Member 121549142109\n"
+        "1204135 ORG FIRM TO  6.49\n"
+        "1056789 PAPER TOWELS  19.99\n"
+        "SUBTOTAL  26.48\n"
+        "TAX  1.50\n"
+        "**** TOTAL  27.98\n"
+        "01/15/2024\n"
+    )
+    result = parser.parse(text)
+    assert len(result.items) == 2
+    assert result.items[0].description_raw == 'ORG FIRM TO'
+    assert result.items[0].total_price_cents == 649
+    assert result.items[1].total_price_cents == 1999
+    assert result.total == 2798
+    assert result.tax == 150
+
+
+def test_costco_parser_tax_code_letter():
+    parser = CostcoParser()
+    text = (
+        "COSTCO WHOLESALE\n"
+        "1204135 ORG FIRM TO  6.49 E\n"
+        "**** TOTAL  6.49\n"
+    )
+    result = parser.parse(text)
+    assert len(result.items) == 1
+    assert result.items[0].total_price_cents == 649
+
+
+def test_costco_parser_leading_letter_item_id():
+    parser = CostcoParser()
+    text = (
+        "COSTCO WHOLESALE\n"
+        "E1204135 ORGANIC MILK  5.99\n"
+        "**** TOTAL  5.99\n"
+    )
+    result = parser.parse(text)
+    assert len(result.items) == 1
+    assert result.items[0].total_price_cents == 599
+
+
+def test_costco_parser_discount_item():
+    parser = CostcoParser()
+    text = (
+        "COSTCO WHOLESALE\n"
+        "1204135 ORG FIRM TO  6.49\n"
+        "294721 ORG FIRM TO  2.00-\n"
+        "**** TOTAL  4.49\n"
+    )
+    result = parser.parse(text)
+    assert len(result.items) == 2
+    # Discount should be stored as negative cents
+    prices = {item.total_price_cents for item in result.items}
+    assert 649 in prices
+    assert -200 in prices
+
+
+def test_costco_parser_multiline_item():
+    parser = CostcoParser()
+    text = (
+        "COSTCO WHOLESALE\n"
+        "900091\n"
+        "CABERNET\n"
+        "7.99\n"
+        "**** TOTAL  7.99\n"
+    )
+    result = parser.parse(text)
+    assert len(result.items) == 1
+    assert result.items[0].total_price_cents == 799
+    assert 'cabernet' in result.items[0].description_normalized
+
+
+def test_costco_parser_date_two_digit_year():
+    parser = CostcoParser()
+    text = (
+        "COSTCO WHOLESALE\n"
+        "1204135 ORG FIRM TO  6.49\n"
+        "**** TOTAL  6.49\n"
+        "01/15/24\n"
+    )
+    result = parser.parse(text)
+    assert result.purchase_datetime is not None
+    assert result.purchase_datetime.year == 2024
